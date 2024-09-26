@@ -1,26 +1,34 @@
 const express = require("express");
+require("./config/database");
+const connectDB = require("./config/database");
+const User = require("./models/user");
 
 const app = express();
 
-//Order of the routes matters a lot
+app.post("/signup", async (req, res) => {
+  //Creating a new instance of User model
+  const user = new User({
+    firstName: "Prabhas",
+    lastName: "Raju",
+    emailId: "actor.prabhas@gmail.com",
+    password: "Anushka@123",
+  });
 
-app.get("/user/:id/:name/:password", (req, res) => {
-  console.log(req.params);
-  res.send({ firstName: "Yugandhar", lastName: "Sarath" });
+  try {
+    await user.save();
+    res.send("User Created Successfully");
+  } catch (err) {
+    res.status(400).send("Error creating user" + err.message);
+  }
 });
 
-// app.post("/user", (req, res) => {
-//   res.send("Data successfully saved to database");
-// });
-
-// app.delete("/user", (req, res) => {
-//   res.send("Deleted Successfully");
-// });
-
-app.use("/test", (req, res) => {
-  res.send("Hello from the server");
-});
-
-app.listen(3000, () => {
-  console.log("Server is successfully listening on port 3000");
-});
+connectDB()
+  .then(() => {
+    console.log("Database connected successfully");
+    app.listen(3000, () => {
+      console.log("Server is successfully listening on port 3000");
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection failed");
+  });
