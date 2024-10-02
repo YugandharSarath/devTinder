@@ -53,16 +53,30 @@ app.delete("/user", async (req, res) => {
 });
 
 //Update user
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
-   const data = req.body;
-   try {
-    const user = await User.findByIdAndUpdate({_id: userId}, data);
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
+  const data = req.body;
+
+  try {
+    const ALLOWED_UPDATES = ["photo_url", "about", "gender", "age", "skills"];
+
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+
+    if (!isUpdateAllowed) {
+      throw new Error("Updates Not Allowed");
+    }
+
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
     res.send("User Updated Successfully");
   } catch (err) {
     res.status(400).send("Something went wrong");
   }
-})
+});
 
 app.post("/signup", async (req, res) => {
   //Creating a new instance of User model
